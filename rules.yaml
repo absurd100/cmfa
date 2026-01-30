@@ -1,0 +1,4 @@
+rules:
+  - DOMAIN-SUFFIX,google.com,Server-Singapore
+  - DOMAIN-KEYWORD,youtube,Server-Singapore
+  - MATCH,DIRECT
