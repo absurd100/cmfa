@@ -1,9 +1,145 @@
-proxies:
-  - name: "Server-Singapore"
-    type: vmess
-    server: sg1.server.com
-    port: 443
-    uuid: your-uuid-here
-    alterId: 0
-    cipher: auto
-    tls: true
+# customopenproxylongX
+proxy-providers:
+  custom:
+    path: ./proxies/custom
+    type: file
+    health-check: {enable: true,url: "https://www.gstatic.com/generate_204",interval: 300}
+    override:
+      additional-suffix: "[custom]"
+      udp: true
+      skip-cert-verify: true
+      udp-over-tcp: true
+
+  udp1:
+    path: ./proxies/udp1
+    url: "https://raw.githubusercontent.com/roosterkid/openproxylist/main/V2RAY_BASE64.txt"
+    type: http
+    health-check: {enable: true,url: "https://www.gstatic.com/generate_204",interval: 300}
+    override:
+      additional-suffix: "[udp]"
+      dialer-proxy: MANUAL
+      udp: true
+      skip-cert-verify: true
+      udp-over-tcp: true
+    exclude-type: ss
+    filter: 🇸🇬|🇭🇰|🏳
+
+  openproxy:
+    path: ./proxies/tcp
+    url: "https://colorhex.qzz.io/sub/v2ray?type=vless&server=ns.cloudflare.com&limit=5&tls=false"
+    type: http
+    health-check: {enable: true,url: "https://www.gstatic.com/generate_204",interval: 300}
+    override:
+      additional-suffix: "[server]"
+      udp: true
+      skip-cert-verify: true
+      udp-over-tcp: true 
+
+mixed-port: 7890
+ipv6: true
+allow-lan: true
+unified-delay: true
+tcp-concurrent: true
+external-controller: 127.0.0.1:9090
+external-ui: ui
+external-ui-url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip"
+
+geodata-mode: false
+find-process-mode: strict
+global-client-fingerprint: chrome
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+  skip-domain:
+    - "+.ongamingo.com"
+    - "104.18.3.2"
+    - "104.18.2.2"
+
+tun:
+  enable: true
+  stack: mixed
+  dns-hijack:
+    - "any:53"
+    - "tcp://any:53"
+  auto-route: true
+  auto-redirect: true
+  auto-detect-interface: true
+
+dns:
+  enable: true
+  ipv6: false
+  use-hosts: true
+  respect-rules: true
+  use-system-hosts: false
+  enhanced-mode: fake-ip
+  fake-ip-filter:
+    - "*"
+  default-nameserver:
+    - 1.1.1.1
+    - 1.0.0.1
+    - 8.8.8.8
+    - 8.8.4.4
+  nameserver:
+    - dhcp://en0
+    - dhcp://system
+  direct-nameserver:
+    - dhcp://en0
+    - dhcp://system
+    - system
+  proxy-server-nameserver:
+    - 1.1.1.1
+    - 1.0.0.1
+    - 8.8.8.8
+    - 8.8.4.4
+  fallback:
+    - system
+    - dhcp://en0
+    - 1.1.1.1
+    - 1.0.0.1
+    - 8.8.8.8
+    - 8.8.4.4
+
+proxy-groups:
+
+  - name: auto
+    type: url-test
+    use: [ openproxy, custom ]
+    url: 'https://www.gstatic.com/generate_204'
+    interval: 300
+    tolerance: 10
+
+  - name: MANUAL
+    type: select
+    proxies: [ auto ]
+    lazy: true
+    use: [ openproxy, custom ]
+
+  - name: x
+    type: select
+    proxies: [ REJECT, PASS ]
+
+  - name: udp
+    type: select
+    use: [ udp1 ]
+    exclude-type: direct
+    tolerance: 30
+    url: 'https://www.gstatic.com/generate_204'
+    interval: 300
+
+rules:
+  - IP-CIDR,104.16.0.0/13,DIRECT
+  - NETWORK,UDP,udp,no-resolve
+  - GEOSITE,category-porn,x
+  - GEOSITE,youtube,MANUAL
+  - GEOSITE,google,MANUAL
+  - MATCH,udp
