@@ -1,0 +1,9 @@
+proxies:
+  - name: "Server-Singapore"
+    type: vmess
+    server: sg1.server.com
+    port: 443
+    uuid: your-uuid-here
+    alterId: 0
+    cipher: auto
+    tls: true
